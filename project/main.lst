@@ -1,0 +1,35 @@
+C51 COMPILER V8.08   MAIN                                                                  06/01/2017 16:28:05 PAGE 1   
+
+
+C51 COMPILER V8.08, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN ..\output\main.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\source\main.c BROWSE DEBUG OBJECTEXTEND PRINT(.\main.lst) OBJECT(..\outp
+                    -ut\main.obj)
+
+line level    source
+
+   1          #include "config.h"
+   2          #include "pwmled.h"
+   3          
+   4          void main()
+   5          {
+   6   1         EA = 1;     //开总中断
+   7   1                
+   8   1         ConfigPWM(10, 10);  //配置并启动PWM
+   9   1         ConfigTimerTwo();    //用T2定时调整占空比
+  10   1          while (1);
+  11   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     16    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

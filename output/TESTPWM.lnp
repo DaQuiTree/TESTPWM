@@ -1,0 +1,4 @@
+"..\output\pwmled.obj",
+"..\output\main.obj" 
+TO "..\output\TESTPWM" 
+PRINT(".\TESTPWM.m51")
