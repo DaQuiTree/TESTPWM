@@ -1,4 +1,4 @@
-"..\output\pwmled.obj",
-"..\output\main.obj" 
+"..\output\main.obj",
+"..\output\pwmled.obj" 
 TO "..\output\TESTPWM" 
 PRINT(".\TESTPWM.m51")

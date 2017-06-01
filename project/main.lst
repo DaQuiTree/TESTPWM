@@ -1,4 +1,4 @@
-C51 COMPILER V8.08   MAIN                                                                  06/01/2017 16:28:05 PAGE 1   
+C51 COMPILER V8.08   MAIN                                                                  06/01/2017 17:24:47 PAGE 1   
 
 
 C51 COMPILER V8.08, COMPILATION OF MODULE MAIN
@@ -13,16 +13,31 @@ line level    source
    3          
    4          void main()
    5          {
-   6   1         EA = 1;     //开总中断
-   7   1                
-   8   1         ConfigPWM(10, 10);  //配置并启动PWM
-   9   1         ConfigTimerTwo();    //用T2定时调整占空比
-  10   1          while (1);
-  11   1      }
+   6   1              uint16 i;
+   7   1         EA = 1;     //开总中断
+   8   1         
+   9   1         InitLED();     
+  10   1      
+  11   1         while (1)
+  12   1         {
+  13   2                 LEDFlash();
+  14   2                 for(i=0; i<60000; i++);
+  15   2                 for(i=0; i<60000; i++);
+  16   2                 for(i=0; i<60000; i++);
+  17   2                 LEDBreath();
+  18   2                 for(i=0; i<60000; i++);
+  19   2                 for(i=0; i<60000; i++);
+  20   2                 for(i=0; i<60000; i++);
+  21   2                 LEDOff();
+  22   2                 for(i=0; i<60000; i++);
+  23   2                 for(i=0; i<60000; i++);
+  24   2                 for(i=0; i<60000; i++);
+  25   2         }
+  26   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     16    ----
+   CODE SIZE        =    258    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

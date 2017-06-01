@@ -1,6 +1,9 @@
 #define _PWMLED_C
 
 #include "config.h"
+#include "pwmled.h"
+
+ledState mLedState = LED_Breath;
 
 sbit PWMOUT = P3^3;
 
@@ -14,24 +17,24 @@ uint32 PeriodCnt = 0;
 void ConfigTimerTwo() //定时器二 50ms
 {
 
-	RCAP2H = (uint8)((65535 - SYS_CLK/20 + 12) >> 8); //设置定时器二为显示器件定时器
-	RCAP2L = (uint8)(65535 - SYS_CLK/20 + 12);
+	RCAP2H = (uint8)((65535 - SYS_CLK/1000*50 + 12) >> 8); //设置定时器二为显示器件定时器
+	RCAP2L = (uint8)(65535 - SYS_CLK/1000*50 + 12);
 
 	T2CON = 0x00;
 
 	TH2 = RCAP2H;
 	TL2 = RCAP2L;
 
-	TR2 = 1;
+	TR2 = 0; 	// T2中断暂时关闭，等待调用
 	//PT2 = 1;//设置LED显示处于最高中断优先级
-	ET2 = 1;
+	ET2 = 0;
 }
 
 void ConfigPWM(uint16 fr, uint8 dc)
 {
     uint16 high, low;
     
-    PeriodCnt = (11059200/12) / fr; //计算一个周期所需的计数值
+    PeriodCnt = SYS_CLK / fr; //计算一个周期所需的计数值
     high = (PeriodCnt*dc) / 100;    //计算高电平所需的计数值
     low  = PeriodCnt - high;        //计算低电平所需的计数值
     high = 65536 - high + 12;       //计算高电平的定时器重载值并补偿中断延时
@@ -44,8 +47,8 @@ void ConfigPWM(uint16 fr, uint8 dc)
     TMOD |= 0x10;   //配置T1为模式1
     TH1 = HighRH;   //加载T1重载值
     TL1 = HighRL;
-    ET1 = 1;        //使能T1中断
-    TR1 = 1;        //启动T1
+    ET1 = 0;        //关闭T1中断，等待调用
+    TR1 = 0;        //关闭T1
     PWMOUT = 1;     //输出高电平
 }
 void AdjustDutyCycle(uint8 dc)
@@ -79,30 +82,88 @@ void InterruptTimerOne() interrupt 3
 
 void InterruptTimerTwo() interrupt 5
 {
-	uint8 code table[13] = {
-	5, 18, 30, 41, 51, 60, 68, 75, 81, 86, 90, 93, 95
+	uint8 code table[16] = {
+	1, 5, 10,18, 23, 30, 41, 51, 60, 68, 75, 81, 86, 90, 93, 95
 	};
 	static bit dir = 0;
-	static uint8 index = 0;
+	static uint8 index = 0, flashCnt = 0;
 
-	TH2 = RCAP2H;
-	TL2 = RCAP2L;
+	TF2 = 0;
 
-	AdjustDutyCycle(table[index]);
-	if(dir == 0)
-	{
-		index++;
-		if(index >= 12)
-		{
-			dir = 1;
-		}
+	switch(mLedState){
+		case LED_Breath:
+			AdjustDutyCycle(table[index]);
+			if(dir == 0)
+			{
+				index++;
+				if(index >= 15)
+				{
+					dir = 1;
+				}
+			}else{
+				index--;
+				if(index == 0)
+				{
+					dir = 0;
+				}
+			}
+			break;
+		case LED_Flash:
+			flashCnt++;
+			if(flashCnt > 10){
+				flashCnt = 0;
+				PWMOUT = ~PWMOUT;
+			}
+			break;
+		case LED_Off:
+			if(!PWMOUT)
+			{
+				PWMOUT = 1;
+			}
+			break;
+		default: break;
 	}
-	else
-	{
-		index--;
-		if(index == 0)
-		{
-			dir = 0;
-		}
-	}
+}
+
+void InitLED()
+{
+	ConfigPWM(100, 10);  //配置并启动PWM
+   	ConfigTimerTwo();    //用T2定时调整占空比
+}
+
+void LEDBreath()
+{
+	mLedState = LED_Breath;
+
+	ET1 = 1;
+	TR1 = 1; //开启定时器中断1（PWM亮度）
+
+	ET2 = 1; //开启定时器中断2 （PWM显示间隔）
+	TR2 = 1;
+}
+
+void LEDFlash()
+{
+	mLedState = LED_Flash;
+
+	PWMOUT = 1;
+
+	ET1 = 0;
+	TR1 = 0; //关闭定时器中断1，Flash不使用该中断
+
+	ET2 = 1;
+	TR2 = 1; //开启定时器2,500ms闪烁
+}
+
+void LEDOff()
+{
+	mLedState = LED_Off;
+
+	ET1 = 0;
+	TR1 = 0; //关闭定时器中断1，Flash不使用该中断
+
+	ET2 = 0;
+	TR2 = 0; //关闭定时器2,500ms闪烁
+
+	PWMOUT = 1;	//关闭小灯
 }

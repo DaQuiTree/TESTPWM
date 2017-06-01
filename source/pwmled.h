@@ -7,11 +7,17 @@
  #ifndef _PWMLED_H
  #define _PWMLED_H
 
+ typedef enum { 
+ 	LED_Breath,LED_Flash,LED_Off
+ }ledState;
+
  #ifndef _PWMLED_C
  //extern
  #endif
 
-void ConfigTimerTwo();
-void ConfigPWM(unsigned int fr, uint8 dc);
+void InitLED();
+void LEDBreath();
+void LEDFlash();
+void LEDOff();
 
  #endif
